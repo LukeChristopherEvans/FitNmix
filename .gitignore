@@ -1,0 +1,18 @@
+
+# ignore ecn
+ECN_BIRD.csv
+ECN_BAT.csv
+sitecode.xlsx
+batsppcode.xlsx
+birdsppcode.xlsx
+ProcessedPipEcn.txt
+ProcessedBlueTitEcn.txt
+
+# ignore rspb
+BBS_MalcolmBurgess_March2022_CSV.csv
+BlueTitWide.txt
+
+# ignore bct
+fieldsurvey.txt
+FieldCommonPipWide.txt
+Detectorcode.txt
