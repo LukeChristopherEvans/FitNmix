@@ -4,12 +4,15 @@ library(nimble)
 library(nimbleEcology)
 library(coda)
 
+vignette("Introduction_to_nimbleEcology")
+
 folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/RSPB/"
 filepath1 = "BlueTitWide.txt"
 
 # !Note! we only 'profile' the models here to save computation time, and we, therefore, only run one chain. For a proper analysis we would need more samples from the posterior
 # and to spend more time evaluating chain mixing across 4 or so chains
 
+#! LUKE check whether we want N[i] ~ dpois(lambda[i]) dNmixture_v(lambda=N[i] ; or  dNmixture_v(lambda=lambda[i]
 
 # load data 
 birddt = read.table(paste0(folderpath,filepath1))
@@ -80,10 +83,10 @@ globalgammod <- nimbleCode({
   for(i in 1:n) {
     logit(p[i,1:visits[i]]) <- delta0 + delta1 * visitmatrix[i,1:visits[i]]  + delta2 *  bandmatrix[i,1:visits[i]] 
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[1:year[i]])
-    N[i] ~ dpois(lambda[i])
+    #N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated counts 
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
