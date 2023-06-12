@@ -16,7 +16,7 @@ library(rstan)
 
 ## Stage 1: set up naive simulation and run the base model
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix"
+folderpath = "~/FitNmix"
 
 # create landscape with spatial autocorrelation 
 area =  expand.grid(1:100,1:100)
@@ -181,7 +181,7 @@ par(mfrow=c(1,1))
 # Why does it overestimate abundance?
 
 # We see above that the model is very effective at estimating 
-# the trend but overestimates the abundance. This is because a classic nmixture model is
+# the trend but overestimates the abundance. This is because the nmixture model is
 # set up in a way that we imagine we have a fixed population (not a density - an actual number of individuals) per site and per year 
 # that we sample from and which cannot be smaller than the maximum observed value (in the range minpop:k).
 # Effectively the lambda in the simulation is really more of a latent density and not a latent population size - causing the mismatch. Or another way of saying

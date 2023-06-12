@@ -18,7 +18,7 @@ library(coda)
 
 ## Stage 1: set up naive simulation and run the base model
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix"
+folderpath = "~/FitNmix"
 
 # create landscape with spatial autocorrelation 
 area =  expand.grid(1:100,1:100)
@@ -122,10 +122,10 @@ nmix1 <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
    }
-   beta1 ~ dnorm(0, 0.05)  # slope on ecology
-   delta0 ~ dnorm(0,1.6) # intercept on observation
+   beta1 ~ dnorm(0, sd=0.05)  # slope on ecology
+   delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   
     # Ecological model for true abundance
    for(i in 1:n) {
@@ -215,25 +215,7 @@ par(mfrow=c(1,1))
 #gelman.diag(samples)
 
 
-## Stage 2: Features of the nimble model  
-
-# Why does it overestimate abundance?
-
-# We see above that the model is very effective at estimating 
-# the trend but overestimates the abundance. This is because a classic nmixture model is
-# set up in a way that we imagine we have a fixed population (not a density - an actual number of individuals) per site and per year 
-# that we sample from and which cannot be smaller than the maximum observed value (in the range minpop:k).
-# Effectively the lambda in the simulation is really more of a latent density and not a latent population size - causing the mismatch. Or another way of saying
-# it, is that the lambda parameter shows what is the likely mean number I would observe in a sample given a fixed population in the local region.
-
-# We can see this feature of the model here in an example with an actual fixed population size: 
-# We imagine we have set sized populations, growing by one individual per year, observed while moving around randomly in a 1x1 grid (i.e. a poisson process).
-# we observe half the square and so have the possibility of seeing half of these 
-# animals on average (lambda is 0.5 * N). I also set the observation prob centered on 80%
-# we'll complete the simulation at just two sites 
-
-# Here we run the simulations to demonstrate the effect in nimble 
-
+## Stage 2 - see ModelOverviewSimulationStan for explanation of this: 
 # heres the sampling scheme for 1 
 Site1N = 10 # starting pop site 1
 Site2N = 20 # starting pop site 2
@@ -245,7 +227,6 @@ ry = runif(Site1N,0,1)
 plot(rx,ry,xlim=c(0,1),ylim=c(0,1))
 abline(v=0.5)
 text(0.1,0.9,labels=paste("count =", sum(rx<0.5)))
-
 
 # Now we run two multi visit simulations: the first with sampling half the square and the second 
 # with sampling all the square - we will see that the model estimates the same population size (and not the density)
@@ -391,48 +372,16 @@ FixedSizeDataset1$avg = apply(FixedSizeDataset1[,5:7],1,mean)
 FixedSizeDataset2$avg = apply(FixedSizeDataset2[,5:7],1,mean)
 
 
-# Now look at the estimates - the key thing is that the model estimates the whole square 
-# not the local density in the sample which should be 50% of the whole square 
-par(mfrow=c(1,1))
-plot(1:20,filter(FixedSizeDataset1,site==1)$wholesquare,ylim=c(0,50),ylab=paste("pop size site",1),xlab="Year") # data from the whole square
-points(1:20,filter(FixedSizeDataset1,site==1)$halfsquare,col="grey") # half square (Expected lambda)
-points(1:20,filter(FixedSizeDataset1,site==1)$Nest,col="red") # N mixture
-points(1:20,filter(FixedSizeDataset1,site==1)$avg,col="blue") # mean
-
-plot(1:20,filter(FixedSizeDataset1,site==2)$wholesquare,ylim=c(0,50),ylab=paste("pop size site",1),xlab="Year") # data from the whole square
-points(1:20,filter(FixedSizeDataset1,site==2)$halfsquare,col="grey") # half square (Expected lambda)
-points(1:20,filter(FixedSizeDataset1,site==2)$Nest,col="red") # N mixture
-points(1:20,filter(FixedSizeDataset1,site==2)$avg,col="blue") # mean
-
-# and because of this it puts the 50% sampling into the observation error (roughly 0.5*0.8)
-plot(sim2.1[,45],main="p")
-
-# here is the estimates when sampling the whole square (exactly the same N estimates)
-plot(1:20,filter(FixedSizeDataset2,site==1)$wholesquare,ylim=c(0,50),ylab=paste("pop size site",1),xlab="Year") # data from the whole square
-points(1:20,filter(FixedSizeDataset2,site==1)$Nest,col="red") # N mixture
-points(1:20,filter(FixedSizeDataset2,site==1)$avg,col="blue") # mean
-
-plot(1:20,filter(FixedSizeDataset2,site==2)$wholesquare,ylim=c(0,50),ylab=paste("pop size site",1),xlab="Year") # real data - site 8
-points(1:20,filter(FixedSizeDataset2,site==2)$Nest,col="red") # N mixture
-points(1:20,filter(FixedSizeDataset2,site==2)$avg,col="blue") # mean
-
-# but now better estimate of the 0.8 observation error 
-plot(sim2.2[,45],main="p")
-
-
-# What to do?
-
 # A second approach is to model the population as a density (not the finite pop size)
-# and to have the marginalizing bounded between the observed count per visit respectively  
-# I implement this in the nimble model below 
+
 
 nmix2 <- nimbleCode({
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  
+    beta0[j] ~ dnorm(2,sd=1)  
   }
-  beta1 ~ dnorm(0, 0.05)  
-  delta0 ~ dnorm(0,1.6) 
+  beta1 ~ dnorm(0,sd= 0.05)  
+  delta0 ~ dnorm(0,sd=1.6) 
   
   # Ecological model for true abundance
   for(i in 1:n) {
@@ -548,19 +497,18 @@ nmixeco <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  
+    beta0[j] ~ dnorm(2,sd=1)  
   }
-  beta1 ~ dnorm(0, 0.05)  
-  delta0 ~ dnorm(0,1.6) 
+  beta1 ~ dnorm(0,sd= 0.05)  
+  delta0 ~ dnorm(0,sd=1.6) 
   
   # Ecological model for true abundance
   for(i in 1:n) {
     log(lambda[i]) <- beta0[site[i]] + beta1 * year[i]
-    N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated counts
       logit(p) <- delta0  
-      count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+      count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
     
     
   }
@@ -629,7 +577,7 @@ dentime2 = system.time(runMCMC(crunMCMCeco,  niter = 22000,
                                nchains=1,
                                samplesAsCodaMCMC = T))
 
-# interestingly slower but probably better estimates
+# 
 dentime ; dentime2
 
 # check effective sizes

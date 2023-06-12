@@ -4,7 +4,7 @@ library(nimble)
 library(nimbleEcology)
 library(coda)
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/BCT/"
+folderpath = "~FitNmix/Data/BCT/"
 filepath1 = "FieldCommonPipWide.txt"
 
 # The plan here is to fit the model across 100 sites
@@ -67,19 +67,19 @@ globalgammod <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   for(s in 1:nspline) {
-    beta1[s] ~ dnorm(0, 0.05)  # slope on ecology
+    beta1[s] ~ dnorm(0, sd=0.05)  # slope on ecology
   }
 
   for(m in 1:ndetectors) {
-    delta1[m] ~ dnorm(0, 1.6)  # slope on observation
+    delta1[m] ~ dnorm(0,sd= 1.6)  # slope on observation
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta2 ~ dnorm(0,1.6)  
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta2 ~ dnorm(0,sd=1.6)  
   
   yearweights[1:nyear] <- splineMat[1:nyear,1:nspline] %*%  beta1[1:nspline]
 
@@ -87,10 +87,9 @@ globalgammod <- nimbleCode({
   for(i in 1:n) {
     logit(p[i,1:visits[i]]) <- delta0 + delta2 * spotsmatrix[i,1:visits[i]] 
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
+
     # Observation model for replicated counts - note we use dNmixture_v not s as we have vector of p's
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -181,19 +180,19 @@ globalgammod1 <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   for(s in 1:nspline) {
-    beta1[s] ~ dnorm(0, 0.05)  # slope on ecology
+    beta1[s] ~ dnorm(0, sd=0.05)  # slope on ecology
   }
   
   for(m in 1:ndetectors) {
-    delta1[m] ~ dnorm(0, 1.6)  # slope on observation
+    delta1[m] ~ dnorm(0, sd=1.6)  # slope on observation
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta2 ~ dnorm(0,1.6)  
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta2 ~ dnorm(0,sd=1.6)  
   
   yearweights[1:nyear] <- splineMat[1:nyear,1:nspline] %*%  beta1[1:nspline]
   
@@ -203,11 +202,10 @@ globalgammod1 <- nimbleCode({
     logit(p[i,j]) <- delta0 + delta2 * spotsmatrix[i,j] + delta1[detectormatrix[i, j]]
     }
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[1:year[i]])
-    N[i] ~ dpois(lambda[i])
     
     
     # Observation model for replicated counts 
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda,p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -314,22 +312,22 @@ nmixsplineshrink <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
-    hyperbeta[s] ~ dnorm(0,0.05)
+    hyperbeta[s] ~ dnorm(0,sd=0.05)
     sigmabeta[s] ~ dexp(5)
     for(l in 1:nsite) {
       beta1[s,l] ~ dnorm(hyperbeta[s], sigmabeta[s])  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta2 ~ dnorm(0,1.6)  
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta2 ~ dnorm(0,sd=1.6)  
   for(m in 1:ndetectors) {
-    delta1[m] ~ dnorm(0, 1.6)  # slope on observation
+    delta1[m] ~ dnorm(0, sd=1.6)  # slope on observation
   }
   
   # define the coef matrix 
@@ -343,11 +341,9 @@ nmixsplineshrink <- nimbleCode({
       logit(p[i,j]) <- delta0 + delta2 * spotsmatrix[i,j] + delta1[detectormatrix[i, j]]
     }
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
     
     # Observation model for replicated counts 
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -414,20 +410,20 @@ nmixsplinefree <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
     for(l in 1:nsite) {
-      beta1[s,l] ~ dnorm(0, 0.05)  # slope on ecology
+      beta1[s,l] ~ dnorm(0, sd=0.05)  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta2 ~ dnorm(0,1.6)  
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta2 ~ dnorm(0,sd=1.6)  
   for(m in 1:ndetectors) {
-    delta1[m] ~ dnorm(0, 1.6)  # slope on observation
+    delta1[m] ~ dnorm(0, sd=1.6)  # slope on observation
   }
   
   # define the coef matrix 
@@ -441,11 +437,9 @@ nmixsplinefree <- nimbleCode({
       logit(p[i,j]) <- delta0 + delta2 * spotsmatrix[i,j] + delta1[detectormatrix[i, j]]
     }
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
-    
+
     # Observation model for replicated counts 
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   

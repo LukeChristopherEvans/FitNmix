@@ -4,9 +4,9 @@ library(nimble)
 library(nimbleEcology)
 library(coda)
 
-vignette("Introduction_to_nimbleEcology")
+#vignette("Introduction_to_nimbleEcology")
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/RSPB/"
+folderpath = "~FitNmix/Data/RSPB/"
 filepath1 = "BlueTitWide.txt"
 
 # !Note! we only 'profile' the models here to save computation time, and we, therefore, only run one chain. For a proper analysis we would need more samples from the posterior
@@ -66,16 +66,16 @@ globalgammod <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   for(s in 1:nspline) {
-    beta1[s] ~ dnorm(0, 0.05)  # slope on ecology
+    beta1[s] ~ dnorm(0, sd=0.05)  # slope on ecology
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta1 ~ dnorm(0,1.6) # slope on obs
-  delta2 ~ dnorm(0,1.6)  
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta1 ~ dnorm(0,sd=1.6) # slope on obs
+  delta2 ~ dnorm(0,sd=1.6)  
   
   yearweights[1:nyear] <- splineMat[1:nyear,1:nspline] %*%  beta1[1:nspline]
   
@@ -83,7 +83,6 @@ globalgammod <- nimbleCode({
   for(i in 1:n) {
     logit(p[i,1:visits[i]]) <- delta0 + delta1 * visitmatrix[i,1:visits[i]]  + delta2 *  bandmatrix[i,1:visits[i]] 
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[1:year[i]])
-    #N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated counts 
     count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
@@ -197,16 +196,16 @@ nmixsplineshrink <- nimbleCode({
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
-    hyperbeta[s] ~ dnorm(0,0.05)
+    hyperbeta[s] ~ dnorm(0,sd=0.05)
     sigmabeta[s] ~ dexp(5)
     for(l in 1:nsite) {
       beta1[s,l] ~ dnorm(hyperbeta[s], sigmabeta[s])  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta2 ~ dnorm(0,1.6)  
-  delta1 ~ dnorm(0, 1.6)
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta2 ~ dnorm(0,sd=1.6)  
+  delta1 ~ dnorm(0,sd=1.6)
 
   
   # define the coef matrix 
@@ -218,11 +217,9 @@ nmixsplineshrink <- nimbleCode({
   for(i in 1:n) {
     logit(p[i,1:visits[i]]) <- delta0 + delta1 * visitmatrix[i,1:visits[i]]  + delta2 *  bandmatrix[i,1:visits[i]] 
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
-    
+
     # Observation model for replicated counts 
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -290,19 +287,19 @@ nmixsplinefree <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
     for(l in 1:nsite) {
-      beta1[s,l] ~ dnorm(0, 0.05)  # slope on ecology
+      beta1[s,l] ~ dnorm(0,sd= 0.05)  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
-  delta2 ~ dnorm(0,1.6)  
-  delta1 ~ dnorm(0, 1.6)  # slope on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
+  delta2 ~ dnorm(0,sd=1.6)  
+  delta1 ~ dnorm(0,sd=1.6)  # slope on observation
   
   
   # define the coef matrix 
@@ -314,11 +311,9 @@ nmixsplinefree <- nimbleCode({
   for(i in 1:n) {
     logit(p[i,1:visits[i]]) <- delta0 + delta1 * visitmatrix[i,1:visits[i]]  + delta2 *  bandmatrix[i,1:visits[i]] 
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
-    
+
     # Observation model for replicated counts 
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -388,8 +383,6 @@ plot(Destimates2$Mean,1:nrow(Destimates2),xlab=c("Parameter estimate"),ylab="",c
 arrows(x0=Destimates2$Mean-Destimates2$SD , y0=1:nrow(Destimates2), x1=Destimates2$Mean+Destimates2$SD, y1=1:nrow(Destimates2), code=3, angle=90, length=0.1)
 abline(v=0,lwd=1.2)
 text(label=Destimates2$rowname,x=rep(max(Destimates2$Mean+Destimates2$SD)+1,nrow(Destimates2)),y=1:nrow(Destimates2),cex=0.5 )
-
-
 
 
 

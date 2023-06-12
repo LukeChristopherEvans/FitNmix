@@ -2,10 +2,10 @@
 library(readxl)
 library(tidyverse)
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/ECN/"
+folderpath = "~FitNmix/Data/ECN/"
 
-filepath1 = "ECN_BAT.csv"
-filepath2 = "batsppcode.xlsx"
+filepath1 = "ECN_BAT.csv" #https://catalogue.ceh.ac.uk/documents/2588ee91-6cbd-4888-86fc-81858d1bf085
+filepath2 = "batsppcode.xlsx" #see readme from above to find species and site codes
 filepath3 = "sitecode.xlsx"
 
 btdt = read.csv(paste0(folderpath,filepath1))

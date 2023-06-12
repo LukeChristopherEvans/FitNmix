@@ -4,7 +4,7 @@ library(nimble)
 library(nimbleEcology)
 library(coda)
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/ECN/"
+folderpath = "~FitNmix/Data/ECN/"
 filepath1 = "ProcessedBlueTitEcn.txt"
 
 # The plan here is to fit the GAM n mixture models. 
@@ -60,14 +60,14 @@ globalgammod <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   for(s in 1:nspline) {
-    beta1[s] ~ dnorm(0, 0.05)  # slope on ecology
+    beta1[s] ~ dnorm(0, sd=0.05)  # slope on ecology
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   
   yearweights[1:nyear] <- splineMat[1:nyear,1:nspline] %*%  beta1[1:nspline]
   logit(p) <- delta0  # this is for the observation model (on the logit scale)
@@ -78,7 +78,7 @@ globalgammod <- nimbleCode({
     N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated counts - still only 1 p
-    count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -156,19 +156,19 @@ shrinkgammod <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
-    hyperbeta[s] ~ dnorm(0,0.05)
+    hyperbeta[s] ~ dnorm(0,sd=0.05)
     sigmabeta[s] ~ dexp(5)
     for(l in 1:nsite) {
       beta1[s,l] ~ dnorm(hyperbeta[s], sigmabeta[s])  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   logit(p) <- delta0  # this is for the observation model (on the logit scale)
   
   
@@ -180,10 +180,9 @@ shrinkgammod <- nimbleCode({
   # Ecological model for true abundance
   for(i in 1:n) {
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated count
-    count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -250,17 +249,17 @@ freegammod <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
     for(l in 1:nsite) {
-      beta1[s,l] ~ dnorm(0,0.05)  # slope on ecology
+      beta1[s,l] ~ dnorm(0,sd=0.05)  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   logit(p) <- delta0  # this is for the observation model (on the logit scale)
   
   
@@ -272,10 +271,9 @@ freegammod <- nimbleCode({
   # Ecological model for true abundance
   for(i in 1:n) {
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated count
-    count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -417,8 +415,6 @@ ggplot(resultdtw,aes(year,meanind))+
   geom_line()+
   facet_wrap(~SITECODE)+
   theme_classic()
-
-
 
 
 # one higher

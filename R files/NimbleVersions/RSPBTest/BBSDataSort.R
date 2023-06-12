@@ -1,6 +1,6 @@
 library(tidyverse)
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/RSPB/"
+folderpath = "~/FitNmix/Data/RSPB/"
 filepath1 = "BBS_MalcolmBurgess_March2022_CSV.csv"
 
 brdt = read.csv(paste0(folderpath,filepath1))

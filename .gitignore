@@ -16,3 +16,10 @@ BlueTitWide.txt
 fieldsurvey.txt
 FieldCommonPipWide.txt
 Detectorcode.txt
+
+# ignore report 
+N mixture models for site.docx
+
+# ignore sorting unavaliable data
+BCTDataSort.R 
+BBSDataSort.R

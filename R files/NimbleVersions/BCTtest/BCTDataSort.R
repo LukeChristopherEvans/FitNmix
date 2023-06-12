@@ -1,6 +1,6 @@
 library(tidyverse)
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/BCT/"
+folderpath = "~/FitNmix/Data/BCT/"
 filepath1 = "fieldsurvey.txt"
 
 FieldDat = read.delim(paste0(folderpath,filepath1))
@@ -114,7 +114,7 @@ WFSopranoPip=arrange(WFSopranoPip,SiteCode,CountYear)
 
 detectorcode = distinct(FieldDat[,c(10,30)])
 
-# I remove this site because its got mixed up - 
+# I remove this site 
 WFCommonPip = filter(WFCommonPip,SiteCode !="120614")
 WFNoctule = filter(WFNoctule,SiteCode !="120614")
 WFSerotine = filter(WFSerotine,SiteCode !="120614")

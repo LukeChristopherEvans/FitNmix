@@ -2,9 +2,9 @@
 library(readxl)
 library(tidyverse)
 
-folderpath = "/home/lukee/Insync/vs917256@reading.ac.uk/OneDrive Biz/FitNmix/Data/ECN/"
+folderpath = "~/FitNmix/Data/ECN/"
 
-filepath1 = "ECN_BIRD.csv"
+filepath1 = "ECN_BIRD.csv" # https://catalogue.ceh.ac.uk/documents/5886c3ba-1fa5-49c0-8da8-40e69a10d2b5
 filepath2 = "birdsppcode.xlsx"
 filepath3 = "sitecode.xlsx"
 

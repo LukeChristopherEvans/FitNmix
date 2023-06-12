@@ -137,14 +137,14 @@ nmixspline <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   for(s in 1:nspline) {
-  beta1[s] ~ dnorm(0, 0.05)  # slope on ecology
+  beta1[s] ~ dnorm(0, sd=0.05)  # slope on ecology
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   
   yearweights[1:nyear] <- splineMat[1:nyear,1:nspline] %*%  beta1[1:nspline]
   logit(p) <- delta0  # this is for the observation model (on the logit scale)
@@ -152,10 +152,8 @@ nmixspline <- nimbleCode({
   # Ecological model for true abundance
   for(i in 1:n) {
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
     # Observation model for replicated counts - still only 1 p
-    count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
   
   }
   
@@ -325,19 +323,19 @@ nmixsplineshrink <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
-    hyperbeta[s] ~ dnorm(0,0.05)
+    hyperbeta[s] ~ dnorm(0,sd=0.05)
     sigmabeta[s] ~ dexp(5)
      for(l in 1:nsite) {
       beta1[s,l] ~ dnorm(hyperbeta[s], sigmabeta[s])  # slope on ecology
      }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   logit(p) <- delta0  # this is for the observation model (on the logit scale)
  
   
@@ -349,10 +347,9 @@ nmixsplineshrink <- nimbleCode({
    # Ecological model for true abundance
   for(i in 1:n) {
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[site[i],1:year[i]])
-    N[i] ~ dpois(lambda[i])
     
     # Observation model for replicated count
-    count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -450,17 +447,17 @@ nmixsplinefree <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   # hyper parameters for beta1
   for(s in 1:nspline) {
     for(l in 1:nsite) {
-      beta1[s,l] ~ dnorm(0,0.05)  # slope on ecology
+      beta1[s,l] ~ dnorm(0,sd=0.05)  # slope on ecology
     }
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   logit(p) <- delta0  # this is for the observation model (on the logit scale)
   
 
@@ -468,10 +465,9 @@ nmixsplinefree <- nimbleCode({
   # Ecological model for true abundance
   for(i in 1:n) {
     log(lambda[i]) <- beta0[site[i]] + sum( (splineMat[1:nyear,1:nspline] %*% beta1[1:nspline,site[i]])[1:year[i],1] )
-    N[i] ~ dpois(lambda[i])
-    
+
     # Observation model for replicated count
-    count[i,1:visits[i]] ~ dNmixture_s(lambda=N[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
+    count[i,1:visits[i]] ~ dNmixture_s(lambda=lambda[i],p=p,Nmin=-1,Nmax=-1,len=visits[i])
     
   }
   
@@ -550,14 +546,14 @@ nmixspline <- nimbleCode({
   
   # Priors
   for(j in 1:nsite) {             
-    beta0[j] ~ dnorm(2,1)  #  Intercepts on ecology
+    beta0[j] ~ dnorm(2,sd=1)  #  Intercepts on ecology
   }
   
   for(s in 1:nspline) {
-    beta1[s] ~ dnorm(0, 0.05)  # slope on ecology
+    beta1[s] ~ dnorm(0, sd=0.05)  # slope on ecology
   }
   
-  delta0 ~ dnorm(0,1.6) # intercept on observation
+  delta0 ~ dnorm(0,sd=1.6) # intercept on observation
   
   yearweights[1:nyear] <- splineMat[1:nyear,1:nspline] %*%  beta1[1:nspline]
   # this is for the observation model (on the logit scale)
@@ -566,10 +562,8 @@ nmixspline <- nimbleCode({
   for(i in 1:n) {
     logit(p[i,1:visits[i]]) <- delta0
     log(lambda[i]) <- beta0[site[i]] + sum(yearweights[1:year[i]])
-    N[i] ~ dpois(lambda[i])
-    
-  
-    count[i,1:visits[i]] ~ dNmixture_v(lambda=N[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
+
+    count[i,1:visits[i]] ~ dNmixture_v(lambda=lambda[i],p=p[i,1:visits[i]],Nmin=-1,Nmax=-1,len=visits[i])
   }
   
   # Derived quantities
